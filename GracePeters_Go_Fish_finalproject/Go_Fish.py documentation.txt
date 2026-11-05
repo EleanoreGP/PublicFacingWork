@@ -1,5 +1,7 @@
 Go_Fish.py documentation:
 
+(Requires Python 3.12 or newer!)
+
 We expect at least 1 or 2 pages of written explanation (in clear English
 prose) and some examples of the program's operation, in addition to the
 program listings (with their associated comments and other documentation).
