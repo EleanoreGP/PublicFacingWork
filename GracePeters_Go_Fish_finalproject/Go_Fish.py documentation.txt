@@ -1,0 +1,158 @@
+Go_Fish.py documentation:
+
+We expect at least 1 or 2 pages of written explanation (in clear English
+prose) and some examples of the program's operation, in addition to the
+program listings (with their associated comments and other documentation).
+Flowcharts (or UML diagrams, if you want to learn about those) can be very
+useful. Many of the best write-ups in past years have carefully incorporated all
+of the aforementioned elements into a single, unified presentation — as
+opposed to a disorganized document containing haphazard program listings
+separate from descriptions of what the programs do, etc. Make certain that
+your write-up does justice to your programs
+
+For my undergraduate term project I decided to code Go Fish. I thought that this would be a project of appropriate difficulty for my level of competency in python. I started
+with a pseudocode skeleton for the program on each of the five versions I attempted, refining the program structure on each take to account for failures/gaps/oversights from
+the previous versions. What I have for you here is the v5 of Go_Fish.py, which (with the exception of not allowing the user to right '6' instead of 'six' or 'sixes' [or any
+other numerical representations of a card's value] in the ask function) I believe allows you to play back to back to back rounds of Go Fish in a python interpreter. I 
+completed ~20 separate rounds (and had my wife run 4 or 5) to see if I could 'break' the game or encounter any critical errors after I got the game logic
+ironed out but so far I haven't been able to fail to complete a game, and all possible end conditions actually work. There are a couple of improvements I already have in mind for v6, however, I just didn't have enough time during finals to fully realize what I would consider a 'complete' game (this includes a GUI player, which Benjamin so rightly
+pointed out was probably too ambitious for the time available). Either way I plan to make a few more refined versions of this program in the future so any and all feedback is appreciated!
+
+
+As far as the actual gameplay loop is concerned, Go_Fish.py runs exactly like a regular game of analog Go Fish, although it uses some less common rules for scoring and turns:
+
+In my version of the game, players take turns asking each other for cards matching cards they have in their hand, and when they find a match they go again. Unlike in some
+versions where finding a match == putting the pair down, cards are not removed from play until a player completes a 'book', that is to say, four of a kind for any given card
+value. Nor is the winner simply the player who goes out first! This means the game can wildly swing back and forth between players, and the winner ends up being she who 'snipes' or 'topdecks' the most books before someone runs out of cards. I find this to be a much more engaging and strategic version of Go Fish that gets a lot of replay
+value, even though its just against a computer.
+
+	(In future versions I want to improve the computer's card selection logic (to improve the game difficulty level), as well as create selections for the number of
+	players and whether or not you want to include jokers in the deck. Alas all this is for v6 and on!)
+
+Gameplay loop:
+	1) Games start with the human player providing their player name
+	2) the deck is initialized via the shuffle() function
+	3) players are initialized
+	4) cards are dealt and the initial turn order is decided
+	5) the turns() function and main gameplay loop commences
+		a) as described above, players take turns asking each other for cards until they find a match either from the other player or from the top of the deck
+		b) the game continues until either a player runs out of cards or the deck does, at which point scores are compared and a winner is declared
+		c) the user can then choose to play again or close the program
+
+
+
+My Go_Fish.py program utilizes the following functions and features:
+
+Indices:
+	- Card index numbers from 1 to 52
+	- Index number to suit translator
+	- Index number to card value translator
+
+	These indices allowed me to fluidly handle card ID and passing between functions, as well as have easy access to printed representation of cards for the player.
+I'd tried a couple different structures for handling card ID throughout the versions and, while I wasn't happy with having three very large indexes (one list and two
+dictionaries) I was happy that the program actually worked when utilizing these data structure representations, and wasn't actually that hard to work with.
+
+	- Pluralized forms of card values
+	- Special case pluralization of "six" to "sixes"
+
+	These two indices helped me handle some of the otherwise invalid spellings for card values. While I could have simply included these terms in the actual index
+number to card value dictionary, I found keeping them separate (and ID'ing them during the ask() function) to be easier when handling asks like "Do you have any X's"
+as it allowed me to avoid having to ID which version (singular or plural) was being used by the player, digging through the dictionary, pulling the correct version,
+and the pluralizing for the print statement. I'm sure I could make this cleaner in future versions but this is what I came up with the for v5 of Go_Fish.py
+
+Functions:
+
+main()
+	- houses the overall program structure
+	- handles basic game initialization functions and data requests
+	- initiates the gameplay loop
+
+shuffle()
+	- called only once inside of main() as part of initialization
+	- copies the master index of cards, shuffles it, and outputs a deck
+	- I'm assuming there is a pre-built deck shuffler out there somewhere that I could have imported, but I wanted to make my own because fun.
+
+deal()
+	- called only once inside of main() as part of initialization
+	- calls the draw() function with a special condition to make sure both players draw seven cards, taking turns after each card drawn as in a real game
+	- also initializes the turn counter, randomly selecting either the computer or human player to go first, and passing that value back to main along with the
+		updated deck
+
+draw()
+	- called within the deal() and gofish() functions
+	- uses cased logic to identify if this is the first draw of the game (i.e. do both players draw seven cards), of if it is the computer's or the human's turn
+		additionally checks that the deck hasn't run out of cards i.e. it isn't drawing from an empty deck which would cause an exception
+	- uses the shuffled deck from shuffle() and passes the 0th positioned card of the list to its destination before removing it from the deck list
+	- additionally sorts the player hands for readability, and indicates what card (for the human) was drawn and whether or not someone in the gofish() loop drew
+		a match and would take an extra turn
+	- furthermore communicates the match condition to the gofish() function when a match is drawn to allow players repeating their turns
+
+turns()
+	- called during the main(), turner(), and winning() functions
+	- handles the actual gameplay loop of Go_Fish.py
+	- re-sorts player hands to make sure they remain readable if they were disordered by finding a match during the loop
+	- handles turn logic, passes the correct player ID into the Player.ask() method, passes those values to the give() function, and handles cases where the player
+		in question did or didn't find a match on their turn: match found==>run books() and winning(), no match==>run gofish()
+
+give()
+	- called during the turns() function
+	- handles requests from each player for a specific card
+		- checks to see whose turn it is
+		- checks if the requested card is in the other player's hand
+		- returns match = 0 (no match found) if the card isn't there or
+			runs the transfer() function to pass over all matching cards to the asking player's hand and return match = 1 (match found) to turns()
+
+transfer()
+	- called during the give() function
+	- iterates through the asked player's hand and IDs all cards matching the requested card
+	- passes all matching cards to the requesting player and then rewrites the giving player's hand to match itself minus cards transferred
+
+books()
+	- called during turns() and gofish()
+	- function handles the game's scoring logic and provides the value the calling functions need to update player scores (Player.book)
+	- iterates through the hand for players who find a match either on a topdeck or by asking the other player
+		- ID's what the value of the matched card is
+		- checks whether or not the player has acquired four of a kind
+			and removes all copies from the player's hand if this is the case, as well as updating the score counter to pass to the calling functions
+
+winning()
+	- called during the draw(), turns() and gofish() functions
+	- is the "does the game stop because XYZ" logic block of the game
+		- identifies whether or not the deck or a player ran out of cards, and translates that condition into either a) calling the end() function to declare the
+			winner (if the game didn't tie) or to ID that the game hasn't ended and to continue the gameplay loop
+
+end()
+	- called only in the winning() function
+	- handles the "who won the game if the game ended" logic for Go_Fish.py
+		- ID's the winning player (if any) and prints this out
+	- allows the player to decide if they want to go for another round or close the program
+
+turner()
+	- called during gofish()
+	- this one is a short block whose only purpose is to swap turns when a player fails to find a match on either their ask or draw phases
+	- for future versions this is just going to be written directly into the else step of the gofish() function,  I had originally utilized this specific logic
+		in both the draw() and turns() functions as well, but it has been essentially vestigial since v3 or so
+
+gofish()
+	- called during the turn() function
+	- initiates the drawing phase of a player's turn if they failed to find a match on their ask phase
+	- also handles logic for when players find a match on their draw phase: match found on topdeck==>player goes again(calls books==>winning()==>turns()) or no match
+		found on topdeck==>turner()==>turns()
+	- as the player's scores can update here as well as in turns() future versions of the game will have a separate scoring function that will be called in each for
+		simplicity
+
+Class methods:
+Player.__init__()
+	- handles initialization of a Player class instance
+	- associates the player's name, hand, and score with their instance, as well as allowing them to access the core indices for the game
+		- I'm not sure why but things reaaaaaaaaaaaaaally tended to break when I didn't give them access to index, decklist, and decksuits, even though they were
+			never actually called without being passed in during any methods
+Player.ask()
+	- called during turns()
+	- handles the players asking each other for cards, i.e., making sure the user inputs only valid cards (card values in their hand) and passing the indecised version
+		back to the  turns() function for other calls to use
+
+Player.checkhand()
+	- called in Player.ask() and give()
+	- allows the game to check if a requested card is valid (on the asker end) and present (on the asked player) end
+	- makes sure to pass back only the index number version of the requested card as this is what the game logic relies on
