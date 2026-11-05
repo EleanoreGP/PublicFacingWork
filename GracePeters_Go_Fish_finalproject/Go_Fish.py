@@ -145,7 +145,7 @@ def transfer(giver, recipient, cards):  # handles transfer requests for valid ca
 
 
 def shuffle(index):  # shuffle function, its really straightforwards but it took foreeeeeeeeever to make and I'm quite proud of it
-    deckindex = index  # creates a dupe index to avoid accidentally updating the global copy and invalidating other functions
+    deckindex = list(index)  # creates a dupe index to avoid accidentally updating the global copy and invalidating other functions
     holder = []  # creates a deck that will return for the deal function and the rest of the game to utilize
     n = 0
     while n < 52:  # failsave condition, makes sure the function only runs while there are still un-indexed cards in the deck
